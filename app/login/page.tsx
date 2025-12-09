@@ -1,11 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Formik, Form, Field, ErrorMessage, FormikHelpers } from "formik";
+import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import { useState } from "react";
+import { useRecoilState, useSetRecoilState } from "recoil";
 import { User, Mail, Lock, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { authMessageState, userState } from "../store/atoms";
+import { toast } from "sonner";
 
 const LoginSchema = Yup.object().shape({
   email: Yup.string()
@@ -18,12 +20,10 @@ const LoginSchema = Yup.object().shape({
 
 export default function LoginPage() {
   const router = useRouter();
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useRecoilState(authMessageState);
+  const setUser = useSetRecoilState(userState);
 
-  const handleLogin = async (
-    values: { email: string; password: string },
-    { setSubmitting }: FormikHelpers<{ email: string; password: string }>
-  ) => {
+  const handleLogin = async (values: any, { setSubmitting }: any) => {
     setMessage("");
     try {
       const res = await fetch(
@@ -39,6 +39,8 @@ export default function LoginPage() {
 
       if (res.ok) {
         setMessage("✅ Login successful! Redirecting...");
+        toast.success("Login successful! Redirecting...");
+        setUser(data.user);
         setTimeout(() => router.push("/todos"), 1000);
       } else {
         setMessage(`⚠️ ${data.message || "Login failed"}`);

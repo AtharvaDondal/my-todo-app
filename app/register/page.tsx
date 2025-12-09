@@ -3,12 +3,13 @@
 import { useRouter } from "next/navigation";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import { useState } from "react";
+import { useRecoilState, useSetRecoilState } from "recoil";
 import { User, Mail, Lock, UserPlus, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { authMessageState, userState } from "../store/atoms";
 
 const RegisterSchema = Yup.object().shape({
-  fullName: Yup.string()
+  fullname: Yup.string()
     .min(2, "Name must be at least 2 characters")
     .required("Full name is required"),
   email: Yup.string()
@@ -21,29 +22,12 @@ const RegisterSchema = Yup.object().shape({
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useRecoilState(authMessageState);
+  const setUser = useSetRecoilState(userState);
 
-  interface RegisterFormValues {
-    fullName: string;
-    email: string;
-    password: string;
-  }
-
-  interface FormikHelpers {
-    setSubmitting: (isSubmitting: boolean) => void;
-  }
-
-  const handleRegister = async (
-    values: RegisterFormValues,
-    { setSubmitting }: FormikHelpers
-  ) => {
+  const handleRegister = async (values: any, { setSubmitting }: any) => {
     setMessage("");
-    // Build explicit payload matching backend expectations
-    const registerData = {
-      fullName: values.fullName,
-      email: values.email,
-      password: values.password,
-    };
+    const { confirmPassword, ...registerData } = values;
 
     try {
       const res = await fetch(
@@ -59,6 +43,7 @@ export default function RegisterPage() {
 
       if (res.ok) {
         setMessage("✅ Registration successful! Redirecting...");
+        setUser(data.user);
         setTimeout(() => router.push("/todos"), 1000);
       } else {
         setMessage(`⚠️ ${data.message || "Registration failed"}`);
@@ -82,11 +67,7 @@ export default function RegisterPage() {
         </div>
 
         <Formik
-          initialValues={{
-            fullName: "",
-            email: "",
-            password: "",
-          }}
+          initialValues={{ fullName: "", email: "", password: "" }}
           validationSchema={RegisterSchema}
           onSubmit={handleRegister}
         >
@@ -187,7 +168,7 @@ export default function RegisterPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-indigo-600 cursor-pointer text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 disabled:opacity-50 transition flex items-center justify-center gap-2"
+                className="w-full cursor-pointer bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 disabled:opacity-50 transition flex items-center justify-center gap-2"
               >
                 {isSubmitting ? (
                   <>

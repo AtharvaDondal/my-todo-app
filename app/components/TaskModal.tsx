@@ -1,15 +1,15 @@
 "use client";
 
-import { Formik, Form, Field, ErrorMessage, FormikHelpers } from "formik";
+import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import { X } from "lucide-react";
-import { Todo } from "../types";
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 
-interface TodoModalProps {
-  todo: Todo | null;
-  onClose: () => void;
-  onSuccess: () => void;
-}
+import { X } from "lucide-react";
+import {
+  editingTodoState,
+  showTodoModalState,
+  todosState,
+} from "../store/atoms";
 
 const TodoSchema = Yup.object().shape({
   title: Yup.string()
@@ -22,20 +22,23 @@ const TodoSchema = Yup.object().shape({
     .required("Description is required"),
 });
 
-export default function TodoModal({
-  todo,
-  onClose,
-  onSuccess,
-}: TodoModalProps) {
-  const handleSubmit = async (
-    values: { title: string; description: string },
-    { setSubmitting }: FormikHelpers<{ title: string; description: string }>
-  ) => {
+export default function TodoModal() {
+  const [showModal, setShowModal] = useRecoilState(showTodoModalState);
+  const editingTodo = useRecoilValue(editingTodoState);
+  const setEditingTodo = useSetRecoilState(editingTodoState);
+  const setTodos = useSetRecoilState(todosState);
+
+  const handleClose = () => {
+    setShowModal(false);
+    setEditingTodo(null);
+  };
+
+  const handleSubmit = async (values: any, { setSubmitting }: any) => {
     try {
-      const url = todo
-        ? `${process.env.NEXT_PUBLIC_API_URL}/api/v1/todo/${todo._id}`
+      const url = editingTodo
+        ? `${process.env.NEXT_PUBLIC_API_URL}/api/v1/todo/${editingTodo._id}`
         : `${process.env.NEXT_PUBLIC_API_URL}/api/v1/todo`;
-      const method = todo ? "PUT" : "POST";
+      const method = editingTodo ? "PUT" : "POST";
 
       const res = await fetch(url, {
         method,
@@ -44,18 +47,19 @@ export default function TodoModal({
         body: JSON.stringify(values),
       });
 
-      if (method === "POST" && res.ok) {
-        const data = await res.json();
-        console.log("Created todo:", data);
-      }
-
-      if (method === "PUT" && res.ok) {
-        const data = await res.json();
-        console.log("Updated todo:", data);
-      }
-
       if (res.ok) {
-        onSuccess();
+        // Refetch todos
+        const todosRes = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/todo`,
+          {
+            credentials: "include",
+          }
+        );
+        const todosData = await todosRes.json();
+        if (todosRes.ok) {
+          setTodos(todosData.todos || []);
+        }
+        handleClose();
       }
     } catch (error) {
       console.error("Save todo error:", error);
@@ -64,24 +68,26 @@ export default function TodoModal({
     }
   };
 
+  if (!showModal) return null;
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md relative">
         <button
-          onClick={onClose}
-          className="absolute cursor-pointer top-4 right-4 p-2 hover:bg-gray-100 rounded-lg transition"
+          onClick={handleClose}
+          className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-lg transition"
         >
           <X className="w-5 h-5" />
         </button>
 
         <h2 className="text-2xl font-bold text-gray-800 mb-6">
-          {todo ? "Edit Todo" : "Add New Todo"}
+          {editingTodo ? "Edit Todo" : "Add New Todo"}
         </h2>
 
         <Formik
           initialValues={{
-            title: todo?.title || "",
-            description: todo?.description || "",
+            title: editingTodo?.title || "",
+            description: editingTodo?.description || "",
           }}
           validationSchema={TodoSchema}
           onSubmit={handleSubmit}
@@ -126,17 +132,21 @@ export default function TodoModal({
               <div className="flex gap-3">
                 <button
                   type="button"
-                  onClick={onClose}
-                  className="flex-1 cursor-pointer px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
+                  onClick={handleClose}
+                  className="flex-1 px-4 py-3 border cursor-pointer border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex-1 px-4 cursor-pointer py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition"
+                  className="flex-1 cursor-pointer px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition"
                 >
-                  {isSubmitting ? "Saving..." : todo ? "Update" : "Create"}
+                  {isSubmitting
+                    ? "Saving..."
+                    : editingTodo
+                    ? "Update"
+                    : "Create"}
                 </button>
               </div>
             </Form>

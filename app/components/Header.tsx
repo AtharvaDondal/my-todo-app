@@ -1,28 +1,35 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 import { User as UserIcon, LogOut, Menu, X } from "lucide-react";
-import { User } from "../types";
+import { sidebarOpenState, userState } from "../store/atoms";
 
-interface HeaderProps {
-  user: User | null;
-  onLogout: () => void;
-  onToggleSidebar: () => void;
-  sidebarOpen: boolean;
-}
+export default function Header() {
+  const router = useRouter();
+  const user = useRecoilValue(userState);
+  const [sidebarOpen, setSidebarOpen] = useRecoilState(sidebarOpenState);
+  const setUser = useSetRecoilState(userState);
 
-export default function Header({
-  user,
-  onLogout,
-  onToggleSidebar,
-  sidebarOpen,
-}: HeaderProps) {
+  const handleLogout = async () => {
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/logout`, {
+        credentials: "include",
+      });
+      setUser(null);
+      router.push("/login");
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  };
+
   return (
     <header className="bg-white shadow-md sticky top-0 z-50">
       <div className="px-4 py-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <button
-            onClick={onToggleSidebar}
-            className="lg:hidden p-2 cursor-pointer hover:bg-gray-100 rounded-lg transition"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="lg:hidden cursor-pointer p-2 hover:bg-gray-100 rounded-lg transition"
           >
             {sidebarOpen ? (
               <X className="w-6 h-6" />
@@ -40,7 +47,7 @@ export default function Header({
             </span>
           </div>
           <button
-            onClick={onLogout}
+            onClick={handleLogout}
             className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition"
           >
             <LogOut className="w-4 h-4" />
