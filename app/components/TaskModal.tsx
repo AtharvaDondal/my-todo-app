@@ -101,7 +101,7 @@ export default function TodoModal() {
                 <Field
                   name="title"
                   type="text"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                  className="w-full px-4 py-3 border text-black border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                   placeholder="Enter todo title"
                 />
                 <ErrorMessage
@@ -119,7 +119,7 @@ export default function TodoModal() {
                   name="description"
                   as="textarea"
                   rows={4}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition resize-none"
+                  className="w-full px-4 py-3 border text-black border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition resize-none"
                   placeholder="Enter todo description"
                 />
                 <ErrorMessage

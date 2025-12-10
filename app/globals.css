@@ -113,11 +113,88 @@
   --sidebar-ring: oklch(0.553 0.013 58.071);
 }
 
+/* Global overrides for common Tailwind utility classes when dark mode is active.
+   This helps ensure components that use explicit utility classes (like bg-white)
+   still look correct in dark mode without changing every component. */
+.dark .bg-white {
+  background-color: var(--card) !important;
+  color: var(--card-foreground) !important;
+}
+.dark .bg-indigo-100,
+.dark .bg-indigo-50 {
+  background-color: rgba(255,255,255,0.03) !important;
+}
+.dark .text-gray-800 {
+  color: var(--foreground) !important;
+}
+.dark .text-gray-600 {
+  color: var(--muted-foreground) !important;
+}
+.dark .shadow-md, .dark .shadow-lg, .dark .shadow-2xl {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4) !important;
+}
+
+/* Gradient utility fallbacks: make gradients darker in dark mode */
+.dark .from-blue-50 { --tw-gradient-from: rgba(20,20,20,0.9) !important; }
+.dark .to-indigo-100 { --tw-gradient-to: rgba(30,30,30,0.9) !important; }
+
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
-  body {
+  html, body {
     @apply bg-background text-foreground;
   }
+
+  /* ensure form elements inherit visible text color globally */
+  input, textarea, select {
+    @apply text-black;
+  }
+}
+
+/* Dropdown / popover UI enhancements (visual-only, no component changes) */
+.bg-popover {
+  background-color: var(--color-popover) !important;
+  color: var(--color-popover-foreground) !important;
+}
+
+.bg-popover[role="menu"], .bg-popover {
+  border-radius: 0.5rem;
+  padding: 0;
+}
+
+.bg-popover button {
+  background: transparent;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.9rem;
+  font-size: 0.95rem;
+  color: inherit;
+  transition: background-color 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+.bg-popover button:hover,
+.bg-popover button:focus {
+  transform: translateY(-1px);
+}
+
+/* light/dark friendly hover backgrounds */
+.bg-popover button:hover {
+  background-color: rgba(15, 23, 42, 0.04);
+}
+.dark .bg-popover button:hover {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.bg-popover .text-muted-foreground, .bg-popover .text-gray-700 {
+  color: var(--muted-foreground) !important;
+}
+
+/* Improve the shadow and border for popovers */
+.bg-popover.shadow-lg {
+  box-shadow: 0 8px 18px rgba(16, 24, 40, 0.08), 0 2px 6px rgba(16,24,40,0.04) !important;
+  border: 1px solid rgba(16,24,40,0.06);
 }

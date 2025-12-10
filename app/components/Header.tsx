@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 import { User as UserIcon, LogOut, Menu, X } from "lucide-react";
 import { sidebarOpenState, userState } from "../store/atoms";
+import { ThemeToggle } from "./ThemeToggle";
 
 export default function Header() {
   const router = useRouter();
@@ -18,6 +19,7 @@ export default function Header() {
       });
       setUser(null);
       router.push("/login");
+      window.location.reload(); // simplest reset
     } catch (error) {
       console.error("Logout error:", error);
     }
@@ -46,6 +48,7 @@ export default function Header() {
               {user?.fullname || user?.email}
             </span>
           </div>
+          <ThemeToggle />
           <button
             onClick={handleLogout}
             className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition"

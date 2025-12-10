@@ -46,3 +46,43 @@ export const authMessageState = atom<string>({
   key: "authMessageState",
   default: "",
 });
+
+// NEW ATOMS FOR SEARCH AND SORT
+export const searchQueryState = atom<string>({
+  key: "searchQueryState",
+  default: "",
+});
+
+export const sortByState = atom<"date" | "title" | "status">({
+  key: "sortByState",
+  default: "date",
+});
+
+export const otpSessionIdState = atom<string | null>({
+  key: "otpSessionId",
+  default: null,
+});
+export const showOtpInputState = atom<boolean>({
+  key: "showOtpInput",
+  default: false,
+});
+
+export const correctOtpState = atom<string>({
+  key: "correctOtp",
+  default: "",
+});
+
+export const otpSentState = atom<boolean>({
+  key: "otpSent",
+  default: false,
+});
+
+export const otpValueState = atom<string>({
+  key: "otpValue",
+  default: "",
+});
+
+export const otpVerifiedState = atom<boolean>({
+  key: "otpVerified",
+  default: false,
+});
